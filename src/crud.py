@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from src.db import models, schemas
+from src.util import hash_pwd
 
 async def get_user(db: AsyncSession, user_id: int):
     stmt = select(models.User).where(models.User.id == user_id)
@@ -17,21 +18,21 @@ async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100):
     return await db.execute(stmt)
 
 async def create_user(db: AsyncSession, user: schemas.UserCreate):
-    fake_hashed_password = user.password + "notreallyhashed"
-    db_user = models.User(email=user.email, hashed_password=fake_hashed_password)
+    hashed = hash_pwd(user.password)
+    db_user = models.User(username=user.username, hashed_password=hashed)
     db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    await db.commit()
+    await db.refresh(db_user)
     return db_user
 
 
-async def get_posts(db: AsyncSession, skip: int = 0, limit: int = 100):
-    return db.query(models.Item).offset(skip).limit(limit).all()
+# async def get_posts(db: AsyncSession, skip: int = 0, limit: int = 100):
+#     return db.query(models.Item).offset(skip).limit(limit).all()
 
 
-async def create_user_post(db: AsyncSession, item: schemas.ItemCreate, user_id: int):
-    db_item = models.Item(**item.dict(), owner_id=user_id)
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
-    return db_item
+# async def create_user_post(db: AsyncSession, item: schemas.ItemCreate, user_id: int):
+#     db_item = models.Item(**item.dict(), owner_id=user_id)
+#     db.add(db_item)
+#     db.commit()
+#     db.refresh(db_item)
+#     return db_item
