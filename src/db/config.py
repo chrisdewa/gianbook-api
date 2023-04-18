@@ -1,10 +1,11 @@
 from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from src.constants import DB_URL
 
-engine = create_engine(
+engine = create_async_engine(
     DB_URL, connect_args={'check_same_thread': False}
 )
 
